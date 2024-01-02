@@ -1,14 +1,75 @@
-isc-dhcp (4.4.3.1-1+dde) UNRELEASED; urgency=medium
+isc-dhcp (4.4.3.1-P1-4) unstable; urgency=medium
 
-  * update
+  * remove sw_64 patch.
 
- -- Debian ISC DHCP Maintainers <isc-dhcp@packages.debian.org>  Tue, 26 Jul 2022 16:44:02 +0800
+ -- LiChengGang <lichenggang@uniontech.com>  Tue, 02 Jan 2024 15:03:04 +0800
 
-isc-dhcp (4.4.3.1-1+dde) unstable; urgency=medium
+isc-dhcp (4.4.3-P1-4) unstable; urgency=low
 
-  * Update bind.tar.gz config.guess and config.sub for sw64
+  [ Athos Ribeiro ]
+  * d/p/adjust-keama-tests.patch: do not rely on endianess (Closes: #1054077)
 
- -- Zhang FeiLong <zhangfeilong@uniontech.com>  Fri, 20 May 2022 17:08:56 +0800
+ -- Santiago Ruano Rincón <santiago@debian.org>  Fri, 20 Oct 2023 09:16:37 -0300
+
+isc-dhcp (4.4.3-P1-3) unstable; urgency=low
+
+  [ Athos Ribeiro ]
+  * Ship keama in a new isc-dhcp-keama binary package (Closes: #1036277)
+  * Add DEP8 tests for keama
+  * d/p/adjust-keama-tests.patch: adjust keama tests
+  * d/rules: make keama tests fail on error messages
+
+  [ Santiago Ruano Rincón ]
+  * Make dhclient-script exits with error when it is not able to write in the
+    temporary file. Patch by Johannes Weißl <jargon@molb.org>
+    (Closes: #982894)
+  * Import debian/patches/0013-DHCPv6-over-PPP-support-626514.patch
+    (Closes: #1015809)
+  * Enable ARM builds in salsa-ci.yml
+  * Bump Standards-Version to 4.6.2. No changes needed
+  * Remove obsolete dependencies on lsb-base and policykit-1. Replace with
+    polkitd
+  * Fix assignment of dpkg-architecture variables in d/rules
+  * Remove the --parallel argument from the call to dh on d/rules
+
+ -- Santiago Ruano Rincón <santiago@debian.org>  Fri, 15 Sep 2023 21:50:04 +0530
+
+isc-dhcp (4.4.3-P1-2) unstable; urgency=medium
+
+  [ Gabriel Potter ]
+  * Support bound /etc/resolv.conf (Closes: #1034502)
+
+  [ Bastian Germann ]
+  * d/copyright Format: Add trailing slash
+
+  [ Santiago Ruano Rincón ]
+  * Add NEWS about isc-dhcp-server EOL'ed and its apparmor profile
+  * Test debian/tests/client-server
+
+ -- Santiago Ruano Rincón <santiago@debian.org>  Mon, 17 Apr 2023 14:20:02 +0200
+
+isc-dhcp (4.4.3-P1-1.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Backport missing IPv6 address lifetime handling. (closes: #1022969)
+
+ -- Bastian Blank <waldi@debian.org>  Mon, 09 Jan 2023 10:15:41 +0100
+
+isc-dhcp (4.4.3-P1-1) unstable; urgency=low
+
+  * New upstream version 4.4.3-P1
+  * Remove no longer needed CVE-2022-2928.patch and CVE-2022-2929.patch
+
+ -- Santiago Ruano Rincón <santiago@debian.org>  Thu, 13 Oct 2022 14:12:54 +0200
+
+isc-dhcp (4.4.3-2.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * An option refcount overflow exists in dhcpd (CVE-2022-2928)
+    (Closes: #1021320)
+  * DHCP memory leak (CVE-2022-2929) (Closes: #1021320)
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Thu, 06 Oct 2022 22:20:47 +0200
 
 isc-dhcp (4.4.3-2) unstable; urgency=medium
 
