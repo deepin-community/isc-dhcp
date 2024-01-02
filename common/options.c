@@ -454,16 +454,16 @@ int fqdn_universe_decode (struct option_state *options,
 		while (s < &bp -> data[0] + length + 2) {
 			len = *s;
 			if (len > 63) {
-				log_info ("fancy bits in fqdn option");
-				return 0;
+				log_info ("label length exceeds 63 in fqdn option");
+				goto bad;
 			}
 			if (len == 0) {
 				terminated = 1;
 				break;
 			}
 			if (s + len > &bp -> data [0] + length + 3) {
-				log_info ("fqdn tag longer than buffer");
-				return 0;
+				log_info ("fqdn label longer than buffer");
+				goto bad;
 			}
 
 			if (first_len == 0) {
@@ -4452,6 +4452,8 @@ add_option(struct option_state *options,
 	if (!option_cache_allocate(&oc, MDL)) {
 		log_error("No memory for option cache adding %s (option %d).",
 			  option->name, option_num);
+		/* Get rid of reference created during hash lookup. */
+		option_dereference(&option, MDL);
 		return 0;
 	}
 
@@ -4463,6 +4465,8 @@ add_option(struct option_state *options,
 			     MDL)) {
 		log_error("No memory for constant data adding %s (option %d).",
 			  option->name, option_num);
+		/* Get rid of reference created during hash lookup. */
+		option_dereference(&option, MDL);
 		option_cache_dereference(&oc, MDL);
 		return 0;
 	}
@@ -4470,6 +4474,9 @@ add_option(struct option_state *options,
 	option_reference(&(oc->option), option, MDL);
 	save_option(&dhcp_universe, options, oc);
 	option_cache_dereference(&oc, MDL);
+
+	/* Get rid of reference created during hash lookup. */
+	option_dereference(&option, MDL);
 
 	return 1;
 }

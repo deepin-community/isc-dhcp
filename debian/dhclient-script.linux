@@ -51,7 +51,7 @@ make_resolv_conf() {
         rm -f $new_resolv_conf
 
         if [ -n "$new_domain_name" ]; then
-            echo domain ${new_domain_name%% *} >>$new_resolv_conf
+            echo domain ${new_domain_name%% *} >>$new_resolv_conf || exit 1
         fi
 
         if [ -n "$new_domain_search" ]; then
@@ -67,24 +67,26 @@ make_resolv_conf() {
                     new_domain_search="$new_domain_name $new_domain_search"
                 fi
             fi
-            echo "search ${new_domain_search}" >> $new_resolv_conf
+            echo "search ${new_domain_search}" >> $new_resolv_conf || exit 1
         elif [ -n "$new_domain_name" ]; then
-            echo "search ${new_domain_name}" >> $new_resolv_conf
+            echo "search ${new_domain_name}" >> $new_resolv_conf || exit 1
         fi
 
         if [ -n "$new_domain_name_servers" ]; then
             for nameserver in $new_domain_name_servers; do
-                echo nameserver $nameserver >>$new_resolv_conf
+                echo nameserver $nameserver >>$new_resolv_conf || exit 1
             done
         else # keep 'old' nameservers
-            sed -n /^\w*[Nn][Aa][Mm][Ee][Ss][Ee][Rr][Vv][Ee][Rr]/p $resolv_conf >>$new_resolv_conf
+            sed -n /^\w*[Nn][Aa][Mm][Ee][Ss][Ee][Rr][Vv][Ee][Rr]/p $resolv_conf >>$new_resolv_conf || exit 1
         fi
 
 	if [ -f $resolv_conf ]; then
 	    chown --reference=$resolv_conf $new_resolv_conf
 	    chmod --reference=$resolv_conf $new_resolv_conf
 	fi
-        mv -f $new_resolv_conf $resolv_conf
+	# cat then rm to handle binds (e.g. ip netns exec)
+	cat $new_resolv_conf > $resolv_conf
+	rm -f $new_resolv_conf
     # DHCPv6
     elif [ -n "$new_dhcp6_domain_search" ] || [ -n "$new_dhcp6_name_servers" ]; then
         resolv_conf=$(readlink -f "/etc/resolv.conf" 2>/dev/null) ||
@@ -95,7 +97,7 @@ make_resolv_conf() {
         rm -f $new_resolv_conf
 
         if [ -n "$new_dhcp6_domain_search" ]; then
-            echo "search ${new_dhcp6_domain_search}" >> $new_resolv_conf
+            echo "search ${new_dhcp6_domain_search}" >> $new_resolv_conf || exit 1
         fi
 
         if [ -n "$new_dhcp6_name_servers" ]; then
@@ -105,17 +107,18 @@ make_resolv_conf() {
                    [ "${nameserver##FE80::}" != "$nameserver" ]; then
                     nameserver="${nameserver}%${interface}"
                 fi
-                echo nameserver $nameserver >>$new_resolv_conf
+                echo nameserver $nameserver >>$new_resolv_conf || exit 1
             done
         else # keep 'old' nameservers
-            sed -n /^\w*[Nn][Aa][Mm][Ee][Ss][Ee][Rr][Vv][Ee][Rr]/p $resolv_conf >>$new_resolv_conf
+            sed -n /^\w*[Nn][Aa][Mm][Ee][Ss][Ee][Rr][Vv][Ee][Rr]/p $resolv_conf >>$new_resolv_conf || exit 1
         fi
 
 	if [ -f $resolv_conf ]; then
             chown --reference=$resolv_conf $new_resolv_conf
             chmod --reference=$resolv_conf $new_resolv_conf
 	fi
-        mv -f $new_resolv_conf $resolv_conf
+	cat $new_resolv_conf > $resolv_conf
+	rm -f $new_resolv_conf
     fi
 }
 
@@ -395,8 +398,9 @@ case "$reason" in
     BOUND6|RENEW6|REBIND6)
         if [ "${new_ip6_address}" ]; then
             # set leased IP
-            ip -6 addr add ${new_ip6_address} \
-                dev ${interface} scope global
+            ip -6 addr replace ${new_ip6_address} \
+                dev ${interface} scope global valid_lft ${new_max_life} \
+                preferred_lft ${new_preferred_life}
         fi
 
         # update /etc/resolv.conf
